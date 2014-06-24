@@ -12,7 +12,7 @@
  socket.send( 'some_event', {name: 'ismael', message : 'Hello world'} );
  */
 
-var FancyWebSocket = function(url) {
+var WebSocketWithDispatcher = function(url) {
   var conn = new WebSocket(url);
 
   var callbacks = {};

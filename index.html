@@ -13,7 +13,7 @@
           $("#debug").append("<p>"+obj.message+"</p>");
         }
 
-        var socket = new FancyWebSocket("ws://localhost:8080");
+        var socket = new WebSocketWithDispatcher("ws://192.168.0.34:8080");
         
         socket.bind('message', printMessage);
         setTimeout(function() {
