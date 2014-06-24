@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Car_Game</title>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, user-scalable=no" />
+
+    <link type="text/css" href="css/WD_Standard.css" rel="stylesheet" />
+    
+    <script type="text/javascript" src="js_coolux/jquery-1.7.2.min.js"></script> 
+    
+    <!-- <script type="text/javascript" src="js_coolux/jquery-ui-1.8.20.custom.min.js"></script> -->
+    <!-- <script type="text/javascript" src="js_coolux/fileuploader.js" ></script> -->
+    <!-- <script type="text/javascript" src="js_coolux/jquery.ui.touch-punch.js"></script> -->
+    <!-- <script type="text/javascript" src="js_coolux/jQueryRotate.2.2.js"></script> -->
+    <!-- <script type="text/javascript" src="js_coolux/jquery.ui.position.js"></script> -->
+    <!-- <script type="text/javascript" src="js_coolux/jquery.contextMenu.js"></script> -->
+    <!-- <script type="text/javascript" src="js_coolux/jquery.dynatree.js"></script> -->
+    <!-- <script type="text/javascript" src="js_coolux/jquery.cookie.js" ></script> -->
+    <!-- <script type="text/javascript" src="js_coolux/jquery.jeditable.mini.js" ></script> -->
+    <!-- <script type="text/javascript" src="js_coolux/wii.js" ></script> -->
+    
+    <script type="text/javascript" src="js_coolux/WD_Standard.js"></script>
+    <script type="text/javascript">
+      var myTitle = "Car_Game";
+      var PageCol1 = "#1b1816";
+      var PageCol2 = "#465366";
+      var PageMinWidth = 640 ;
+      var PageHeight = 1136 ;
+      var myTimeOut = 250;   //ms to wait between to Polls for ServerData
+      var WDBGImg = "" ; 
+    </script>
+    
+    
+    <script src="js/ws_events_dispatcher.js"></script>
+    
+    
+    <style type="text/css" >
+      body{
+        color: #FFFFFF;
+        margin: 0px;
+        padding: 0px;
+        background-color: #465366;
+        font-family:"Microsoft Sans Serif", sans-serif;
+        font-size:10pt;
+        line-height: 11pt;
+      }
+    </style>
+  </head>
+  
+  <body>
+
+    <div id="red-car-go" style="position:absolute; left: 25px; top: 25px;width: 40px;height:40px;background-color:#f00; padding: 100px;" 
+    onmousedown="SetData('WDBtnCustom_2=1'); $(this).css('background-color','#a00');" 
+    onmouseup="SetData('WDBtnCustom_2=0'); $(this).css('background-color','#f00');" 
+    ontouchstart="SetData('WDBtnCustom_2=1'); $(this).css('background-color','#a00');"
+    ontouchend="SetData('WDBtnCustom_2=0'); $(this).css('background-color','#f00');">Push me!</div>
+
+    <div id="green-car-go" style="position:absolute; left: 25px; top: 25px;width: 40px;height:40px;background-color:#0f0; padding: 100px;" 
+    onmousedown="SetData('WDBtnCustom_6=1'); $(this).css('background-color','#0a0');" 
+    onmouseup="SetData('WDBtnCustom_6=0'); $(this).css('background-color','#0f0');" 
+    ontouchstart="SetData('WDBtnCustom_6=1'); $(this).css('background-color','#0a0');"
+    ontouchend="SetData('WDBtnCustom_6=0'); $(this).css('background-color','#0f0');">Push me!</div>
+
+
+    <div id="debug"></div>
+    <button type="button" id="button">Send message to all connected</button>
+    
+    <button type="button" id="player1" onclick="socket.send('registerPlayer', {});">Player 1</button>
+    
+    <div id="player-registered-div" style="width:150px;height:150px; background-color: #eee;"></div>
+    
+    <div id="msg"></div>
+
+
+    <div id="inPageDiv" />
+    
+     <script type="text/javascript">
+        $("#green-car-go").hide();
+        $("#red-car-go").hide();
+      
+        function debug(str){ 
+          $("#debug").append("<p>"+str+"</p>");
+        };
+        
+        function printMessage(obj) {
+          $("#debug").append("<p>"+obj.message+"</p>");
+        }
+       
+        function playerRegistered(objData) {
+          $("#player-registered-div").text("REGISTERED!")
+            .append("<p>You are: "+objData.player+"</p>");
+            console.log(objData.player);
+          if(objData.player === "player1") {
+            $("#player-registered-div").css("background-color","#f00");
+            $("#green-car-go").show();
+          } else {
+            $("#player-registered-div").css("background-color","#0f0");
+            $("#red-car-go").show();
+          }
+        }
+        
+        function registrationFailed() {
+          $("#player-registered-div").text("SORRY, THERE ARE TOO MANY PLAYERS.")
+            .css("background-color","#0aa");
+        }
+
+        var socket = new WebSocketWithDispatcher("ws://192.168.0.34:8080");
+        
+          socket.bind('message', printMessage);
+          socket.bind('registerPlayer', playerRegistered);
+          socket.bind('registrationFailed', registrationFailed);
+        
+        setTimeout(function() {
+          socket.send('message', {
+            'message':'Hello client'
+          });
+
+        }, 1000);    
+        
+        
+    </script>
+  </body>
+</html>
