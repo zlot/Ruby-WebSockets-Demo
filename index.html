@@ -14,17 +14,25 @@
         }
         
         function playerRegistered(objData) {
-          console.log(objData);
           $("#player-registered-div").text("REGISTERED!")
-            .append("<p>"+objData.player1+"</p>")
-            .css("background-color","#f0f");
+            .append("<p>You are: "+objData.player+"</p>");
+          if(objData.player === "player1") {
+            $("#player-registered-div").css("background-color","#f00");
+          } else {
+            $("#player-registered-div").css("background-color","#0f0");
+          }
+        }
+        
+        function registrationFailed() {
+          $("#player-registered-div").text("SORRY, THERE ARE TOO MANY PLAYERS.")
+            .css("background-color","#0aa");
         }
 
         var socket = new WebSocketWithDispatcher("ws://192.168.0.34:8080");
         
         socket.bind('message', printMessage);
-        
         socket.bind('registerPlayer', playerRegistered);
+        socket.bind('registrationFailed', registrationFailed);
         
         setTimeout(function() {
           socket.send('message', {
@@ -33,10 +41,10 @@
         
     
         $('#player1').click(function() {
-          socket.send('registerPlayer', {
-            'player1':true
-          });
-        });    
+          socket.send('registerPlayer', {});
+        });   
+        
+         
         
         $('#button').click(function() {
           socket.send('message', {
@@ -52,7 +60,7 @@
   </head>
   <body>
     <div id="debug"></div>
-    <button type="button" id="button">Start sending random numbers</button>
+    <button type="button" id="button">Send message to all connected</button>
     
     <button type="button" id="player1">Player 1</button>
     
