@@ -28,7 +28,7 @@ var WebSocketWithDispatcher = function(url) {
       'event' : event_name,
       'data' : event_data
     });
-    conn.send(payload); // send JSON data to socket server 
+    conn.send(payload); // send JSON string to socket server 
     return this;
   };
   
@@ -48,13 +48,13 @@ var WebSocketWithDispatcher = function(url) {
     dispatch('open', null);
   };
   
-  var dispatch = function(event_name, message) { // message is actually a json object?
+  var dispatch = function(event_name, objData) {
     var chain = callbacks[event_name];
     if ( typeof chain == 'undefined')
       return; // no callbacks for this event
       
     for (var i = 0; i < chain.length; i++) {
-      chain[i](message);
+      chain[i](objData);
     };
   };
 }; 

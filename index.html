@@ -12,21 +12,31 @@
         function printMessage(obj) {
           $("#debug").append("<p>"+obj.message+"</p>");
         }
+        
+        function playerRegistered(objData) {
+          console.log(objData);
+          $("#player-registered-div").text("REGISTERED!")
+            .append("<p>"+objData.player1+"</p>")
+            .css("background-color","#f0f");
+        }
 
         var socket = new WebSocketWithDispatcher("ws://192.168.0.34:8080");
         
         socket.bind('message', printMessage);
+        
+        socket.bind('registerPlayer', playerRegistered);
+        
         setTimeout(function() {
           socket.send('message', {
           'message':'Hello client'
-        });
-          
-        }, 1000);    
+        });}, 1000);    
         
-        console.log(JSON.stringify({
-          'message':'Hello client'
-        }));
-        
+    
+        $('#player1').click(function() {
+          socket.send('registerPlayer', {
+            'player1':true
+          });
+        });    
         
         $('#button').click(function() {
           socket.send('message', {
@@ -43,6 +53,11 @@
   <body>
     <div id="debug"></div>
     <button type="button" id="button">Start sending random numbers</button>
+    
+    <button type="button" id="player1">Player 1</button>
+    
+    <div id="player-registered-div" style="width:150px;height:150px; background-color: #eee;"></div>
+    
     <div id="msg"></div>
   </body>
 </html>
