@@ -1,71 +1,130 @@
+<!DOCTYPE html>
 <html>
   <head>
-    <script src='http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js'></script>
-    <script src="js/ws_events_dispatcher.js"></script>
-    <script>
-      $(document).ready(function(){
-        
+    <title>Car Game</title>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <!-- <meta name="viewport" content="width=device-width, user-scalable=no" /> -->
+    <meta name="viewport" content="width=device-width, minimum-scale=1, maximum-scale=1, user-scalable=no" />
+
+    <link type="text/css" href="css/WD_Standard.css" rel="stylesheet" />
+    <link type="text/css" href="bower_components/bootstrap/dist/css/bootstrap.css" rel="stylesheet" />
+    
+    <style type="text/css" >
+      body {
+        color: #FFFFFF;
+        background-color: #222;
+        margin: 0px;
+        padding: 0px;
+      }
+      
+      #container {
+        margin: 20px;
+      }
+      
+      /* BOOTSTRAP OVERRIDES */
+      .btn-lg {
+        padding: 100px 16px;
+      }
+      p {
+        padding: 15px;
+      }
+    </style>
+    
+    <script src="bower_components/jquery/dist/jquery.min.js"></script>    
+    <script src="bower_components/bootstrap/dist/js/bootstrap.js"></script>
+    
+    <script type="text/javascript">
+      /* don't let the page scroll */
+      $(document).bind('touchmove', function(e) {
+        e.preventDefault();
+      });
+    
+      $(document).ready(function() {
+        $("#green-car-go").hide();
+        $("#red-car-go").hide();
+        $('#player-registered-msg').hide();
+      
         function debug(str){ 
           $("#debug").append("<p>"+str+"</p>");
         };
         
-        function printMessage(obj) {
-          $("#debug").append("<p>"+obj.message+"</p>");
-        }
         
+        $('#register-player').click(function() {
+          socket.send('registerPlayer', {});
+        });
+       
         function playerRegistered(objData) {
-          $("#player-registered-div").text("REGISTERED!")
+          $('#register-player').fadeOut();
+          
+          $("#player-registered-msg")
+            .fadeIn()
+            .text("You're in the game!")
             .append("<p>You are: "+objData.player+"</p>");
           if(objData.player === "player1") {
-            $("#player-registered-div").css("background-color","#f00");
+            $("#green-car-go").show();
           } else {
-            $("#player-registered-div").css("background-color","#0f0");
+            $("#red-car-go").show();
           }
         }
         
         function registrationFailed() {
-          $("#player-registered-div").text("SORRY, THERE ARE TOO MANY PLAYERS.")
-            .css("background-color","#0aa");
+          $("#player-registered-msg").text("Sorry, there are too many players.")
+            .fadeIn()
+            .removeClass("bg-primary")
+            .addClass("bg-warning")
+            .addClass("text-danger");
         }
-
+  
         var socket = new WebSocketWithDispatcher("ws://192.168.0.34:8080");
-        
-        socket.bind('message', printMessage);
-        socket.bind('registerPlayer', playerRegistered);
-        socket.bind('registrationFailed', registrationFailed);
-        
-        setTimeout(function() {
-          socket.send('message', {
-          'message':'Hello client'
-        });}, 1000);    
-        
+          socket.bind('registerPlayer', playerRegistered);
+          socket.bind('registrationFailed', registrationFailed);
+      }); 
+    </script>   
     
-        $('#player1').click(function() {
-          socket.send('registerPlayer', {});
-        });   
-        
-         
-        
-        $('#button').click(function() {
-          socket.send('message', {
-            'message':'HI ALL'
-          });
-          // setInterval(function() {
-            // socket.send(Math.random());},500
-          // );
-        });
-        
-      });
+    
+    <script type="text/javascript" src="js_coolux/WD_Standard.js"></script>
+    <script type="text/javascript">
+      var myTitle = "Car_Game";
+      var PageCol1 = "#1b1816";
+      var PageCol2 = "#465366";
+      var PageMinWidth = 640 ;
+      var PageHeight = 1136 ;
+      var myTimeOut = 250;   //ms to wait between to Polls for ServerData
+      var WDBGImg = "" ; 
     </script>
+    
+    <script src="js/ws_events_dispatcher.js"></script>
+    
+    
   </head>
+  
   <body>
-    <div id="debug"></div>
-    <button type="button" id="button">Send message to all connected</button>
     
-    <button type="button" id="player1">Player 1</button>
-    
-    <div id="player-registered-div" style="width:150px;height:150px; background-color: #eee;"></div>
-    
-    <div id="msg"></div>
+    <div id="container">
+      <button type="button" class="btn btn-primary center-block" id="register-player">Enter the game</button>
+      
+      <p id="player-registered-msg" class="bg-primary" style="text-align:center;"></p>
+      
+      
+      <button type="button" class="btn btn-danger btn-lg btn-block" id="red-car-go"
+        onmousedown="SetData('WDBtnCustom_2=1');" 
+        onmouseup="SetData('WDBtnCustom_2=0');" 
+        ontouchstart="SetData('WDBtnCustom_2=1');"
+        ontouchend="SetData('WDBtnCustom_2=0');">Push me!</button>
+  
+      <button type="button" class="btn btn-success btn-lg btn-block" id="green-car-go"
+        onmousedown="SetData('WDBtnCustom_6=1');" 
+        onmouseup="SetData('WDBtnCustom_6=0');" 
+        ontouchstart="SetData('WDBtnCustom_6=1');"
+        ontouchend="SetData('WDBtnCustom_6=0');">Push me!</button>
+  
+  
+      <div id="debug"></div>
+      
+      
+      
+      </div>
   </body>
 </html>

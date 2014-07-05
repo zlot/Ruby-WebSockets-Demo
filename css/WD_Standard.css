@@ -1,0 +1,97 @@
+﻿#WDBG{
+  position:absolute; 
+  left: 0px; 
+  top:  0px;
+  z-order: 1000;
+}
+
+.WDLabel{
+  display: block;
+  margin: 0px;
+  padding: 0px;
+  cursor:default;
+}
+
+.WDPictureBox{
+}
+
+.WDLabel{
+}
+
+.WDFader{
+}
+
+.WDBaseButton{
+	cursor:pointer;
+}
+.WDTextBoxC{
+	color: #fff;
+	border: 1px solid #465366;
+	background-color: #354151;
+	resize: none;
+	overflow: auto;
+}
+.WDTreeView{
+	overflow:auto;
+	background-color: #354151;	
+}
+.WDDropDown{
+	cursor:pointer;
+	background-color: #354151;
+	border-color: #354151;
+}
+
+.WDDigitalDisplay{
+	 font-family:Verdana, Arial,monospace;
+	 text-align:right;
+}
+
+.WDDigitalClock{
+	 font-family:Verdana, Arial,monospace;
+}
+.CITP_Img{
+}
+
+.WDMediaPanel{
+ 
+}
+.WDMediaPanel_selected{
+  outline: 2px solid rgb(65, 105, 225);
+}
+.WDButtonImageLoader{
+  
+}
+.WDButtonImageLoader .hover{
+  
+}
+.unvisible{
+  visibility: hidden;
+}
+.ImageLoader{
+  
+}
+/*
+a:-webkit-any-link{
+	color: none !important;
+	text-decoration:none !important;
+}*/
+
+.WDPlaylist{
+	/*background-color: #00f;*/
+	cellmargin:0px;
+	cellpadding:0px;
+	font-family:Verdana, Arial,monospace;
+	font-size:10px;
+
+}
+
+.WDPlaylist tbody{	
+	overflow-y:auto;
+}
+
+.WDPlaylist tr{
+	height: 14px; 
+}
+.WDPlaylist td{
+	border: 1px solid gray;
+}

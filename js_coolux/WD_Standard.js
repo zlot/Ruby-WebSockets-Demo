@@ -26,6 +26,8 @@ $(document).ready(function() {
 	window.onresize = SetBKG;
 	GetData();
 	SetBKG();
+	
+	$(document).trigger("docReady");
 });
 
 var lastSendValue = new Array();
@@ -58,7 +60,8 @@ function SetData(DataString) {
 		type: "GET",
 		url: "http://192.168.0.29:8080?SetVars&" + DataString,
 		cache: false,
-		dataType: "json",
+		crossDomain:true,
+		dataType: "jsonp",
 		success: function(data) {
 			//log.error("SetVars::success. Returned: ");
 			//console.debug("SetData:");
@@ -66,7 +69,8 @@ function SetData(DataString) {
 			parseResponse(data);
 		}
 	});
-	aktiv = window.setTimeout("GetData()", 2 * myTimeOut );
+  // TURN OFF POLLING
+	//aktiv = window.setTimeout("GetData()", 2 * myTimeOut );
 }
 
 function GetData() {
@@ -76,7 +80,8 @@ function GetData() {
 		type: "GET",
 		url: "http://192.168.0.29:8080?GetVars=" + myTitle,
 		cache: false,
-		dataType: "json",
+		crossDomain:true,
+		dataType: "jsonp",
 		success: function(data) {
 			//console.debug("GetData:");
 			//console.debug(data);
@@ -85,7 +90,7 @@ function GetData() {
 				window.clearInterval(aktiv);
 				alert("No Vars, GetData - Timer stopped!");				
 			} else {
-				parseResponse(data);
+				//parseResponse(data);
 			}
 			// TURN OFF POLLING
 			//aktiv = window.setTimeout("GetData()", myTimeOut);
@@ -669,7 +674,8 @@ function drawBKG(PageCol1, PageCol2, PageWidth, PageHeight, WDBGImg) {
 	var canvas = document.getElementById('WDBG');
 
 	// Make sure we don't execute when canvas isn't supported
-	if (canvas.getContext) {
+	// NOTE:: EDITED THIS. WAS if(canvas.getContext)
+	if (canvas) {
 		var ctx = canvas.getContext('2d');
 		if (WDBGImg == "") {
 			var grad = ctx.createLinearGradient(0, 0, 0, PageHeight);

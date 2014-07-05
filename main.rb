@@ -1,5 +1,17 @@
 require 'em-websocket'
 require 'json'
+require 'socket'
+
+# class Client
+  # attr_accessor :websocket
+  # attr_accessor :name
+# 
+  # def initialize(websocket_arg)
+    # @websocket = websocket_arg
+  # end
+# end
+
+
 
 EM.run {
   
@@ -11,8 +23,12 @@ EM.run {
     "player2" => false,
   }
   
-  
-  EM::WebSocket.run(:host => "0.0.0.0", :port => 8080) do |socket|
+  @host = "0.0.0.0" # serve to all on network
+  @port = 8080
+  @ipaddress = IPSocket.getaddress(Socket.gethostname)
+  puts "WebSocket server running on #{@ipaddress}, port #{@port}"  
+
+  EM::WebSocket.run(:host => @host, :port => @port) do |socket|
     
     socket.onopen do |handshake|
       @clients << socket # append socket to array
@@ -36,9 +52,7 @@ EM.run {
         @players.each do |key, value|
           if value == false
             # we can register this player. set & return
-            @players[key] = true
-            # NOTE: should probably set this as player CLIENT instead!
-            #
+            @players[key] = socket
             
             # this is a bit dodgy, as when the 2nd player registers,
             # this is actually true. but for the logic below to work, we say
@@ -58,7 +72,7 @@ EM.run {
           end
         end
         
-        puts @players
+        # puts @players
         
         if registration_full
           json_string = {
@@ -69,23 +83,6 @@ EM.run {
         end
       end
 
-      
-      # if hash['data']['player1'] == true
-        # player1 = true
-        # puts "player1: #{player1}"
-#         
-        # json_string = { 
-          # "event" => "registerPlayer",
-          # "data" => {
-            # "player1" => true
-          # },
-         # }.to_json
-#         
-        # puts json_string
-#         
-        # socket.send json_string
-      # end
-      
       
       # @clients.each do |s|
         # s.send jsonObj
