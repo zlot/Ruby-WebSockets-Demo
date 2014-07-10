@@ -77,11 +77,32 @@
             .addClass("text-danger");
         }
         
-        console.log(window.location.host);
-        // Create connection to ruby websocket server 
+        function gameOver() {
+          // unassign event listeners
+          $('#red-car-go').unbind('mousedown touchstart mouseup touchend');
+          $('#green-car-go').unbind('mousedown touchstart mouseup touchend');
+        }
+        
+        (function bindButtonEvents() {
+          $('#red-car-go').bind('mousedown touchstart', function() {
+            SetData('WDBtnCustom_2=1');
+          }).bind('mouseup touchend', function() {
+            SetData('WDBtnCustom_2=0');
+          });
+          
+          $('#green-car-go').bind('mousedown touchstart', function() {
+            SetData('WDBtnCustom_6=1');
+          }).bind('mouseup touchend', function() {
+            SetData('WDBtnCustom_6=0');
+          });
+        })();
+        
+        // Create connection to ruby websocket server
+        // and bind onmessage ws events to functions
         var socket = new WebSocketWithDispatcher("ws://192.168.0.34:4567");
           socket.bind('registerPlayer', playerRegistered);
           socket.bind('registrationFailed', registrationFailed);
+          socket.bind('gameOver', gameOver);
       }); 
     </script>   
     
@@ -111,16 +132,10 @@
       
       
       <button type="button" class="btn btn-danger btn-lg btn-block" id="red-car-go"
-        onmousedown="SetData('WDBtnCustom_2=1');" 
-        onmouseup="SetData('WDBtnCustom_2=0');" 
-        ontouchstart="SetData('WDBtnCustom_2=1');"
-        ontouchend="SetData('WDBtnCustom_2=0');">Push me!</button>
+        >Push me!</button>
   
       <button type="button" class="btn btn-success btn-lg btn-block" id="green-car-go"
-        onmousedown="SetData('WDBtnCustom_6=1');" 
-        onmouseup="SetData('WDBtnCustom_6=0');" 
-        ontouchstart="SetData('WDBtnCustom_6=1');"
-        ontouchend="SetData('WDBtnCustom_6=0');">Push me!</button>
+        >Push me!</button>
   
   
       <div id="debug"></div>
