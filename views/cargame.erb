@@ -77,8 +77,9 @@
             .addClass("text-danger");
         }
         
+        console.log(window.location.host);
         // Create connection to ruby websocket server 
-        var socket = new WebSocketWithDispatcher("ws://localhost:4567");
+        var socket = new WebSocketWithDispatcher("ws://192.168.0.34:4567");
           socket.bind('registerPlayer', playerRegistered);
           socket.bind('registrationFailed', registrationFailed);
       }); 

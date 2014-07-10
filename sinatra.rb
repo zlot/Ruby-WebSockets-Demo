@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
   
-$: << File.expand_path('../../lib/', __FILE__)
+# $: << File.expand_path('../../lib/', __FILE__)
 require 'rubygems' 
 require 'bundler/setup'
 require 'sinatra'
@@ -8,12 +8,23 @@ require 'sinatra-websocket'
 require 'json'
 
 
-set :sockets, []
-
 configure do 
   set :server, 'thin'
   set :environment, 'production'
 end
+
+
+#Multiusers
+set :sockets, []
+
+players = {
+  "player1" => false,
+  "player2" => false,
+}
+  
+  
+ipaddress = IPSocket.getaddress(Socket.gethostname)
+puts "WebSocket server running on #{ipaddress}"
 
 
 get '/' do
@@ -21,26 +32,76 @@ get '/' do
     erb :cargame
   else
     request.websocket do |ws|
-      ws.onopen do
-        
+      
+      ws.onopen do |handshake|
         # Access properties on the EM::WebSocket::Handshake object, e.g.
         # path, query_string, origin, headers
-        json_string = {
-              "event" => "registerPlayer"
-            }.to_json
-        
-        ws.send json_string
         
         settings.sockets << ws  # append socket to array
+        
         puts "WebSocket connection open. Clients connected: #{settings.sockets.length}"
+        puts settings.sockets
       end
-      ws.onmessage do |msg|
-        EM.next_tick { settings.sockets.each{|s| s.send(msg) } }
+      
+      
+      ws.onmessage do |jsonObj|
+
+       hash = JSON.parse jsonObj
+        
+        if hash["event"] == "registerPlayer"
+        
+          registration_full = true
+          
+          # check player array. If there is a false, set this as player
+          players.each do |key, value|
+            if value == false
+              # we can register this player. set & return
+              players[key] = ws
+              
+              # this is a bit dodgy, as when the 2nd player registers,
+              # this is actually true. but for the logic below to work, we say
+              # false for now. REFACTOR LATER.
+              registration_full = false
+              
+              json_string = {
+                "event" => "registerPlayer",
+                "data"  => {
+                  "player" => "#{key}"
+                }
+              }.to_json
+              
+              # note: on client end, check for player value
+              ws.send json_string
+              break
+            end
+          end
+          
+          # puts @players
+          
+          if registration_full
+            json_string = {
+              "event" => "registrationFailed"
+            }.to_json
+            
+            ws.send json_string
+          end
+        end
+  
+        
+        # @clients.each do |s|
+          # s.send jsonObj
+        # end
+
+
       end
+      
       ws.onclose do
-        warn("websocket closed")
-        settings.sockets.delete(ws)
+        puts "Connection closed"
+        ws.send "{'message':'I closed you'}"
+        settings.sockets.delete ws
+        puts "clients now connected: #{settings.sockets.length}"        
       end
+      
     end
   end
 end
@@ -49,44 +110,11 @@ end
 x = 0
 
 get '/pb' do
-  x+=1
-  puts x
+  # wipe players array
+  players = {
+    "player1" => false,
+    "player2" => false,
+  }
 end
 
 
-__END__
-@@ index
-<html>
-  <body>
-     <h1>Simple Echo & Chat Server</h1>
-     <form id="form">
-       <input type="text" id="input" value="send a message"></input>
-     </form>
-     <div id="msgs"></div>
-     
-  </body>
-
-  <script type="text/javascript">
-    window.onload = function(){
-      (function(){
-        var show = function(el){
-          return function(msg){ el.innerHTML = msg + '<br />' + el.innerHTML; }
-        }(document.getElementById('msgs'));
-        var ws       = new WebSocket('ws://' + window.location.host + window.location.pathname);
-        ws.onopen    = function()  { show('websocket opened'); };
-        ws.onclose   = function()  { show('websocket closed'); }
-        ws.onmessage = function(m) { show('websocket message: ' +  m.data); };
-
-        var sender = function(f){
-          var input     = document.getElementById('input');
-          input.onclick = function(){ input.value = "" };
-          f.onsubmit    = function(){
-            ws.send(input.value);
-            input.value = "send a message";
-            return false;
-          }
-        }(document.getElementById('form'));
-      })();
-    }
-  </script>
-</html>
