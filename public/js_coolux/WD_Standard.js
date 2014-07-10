@@ -58,7 +58,7 @@ function SetData(DataString) {
 	clearTimeout(aktiv);
 	$.ajax({
 		type: "GET",
-		url: "http://192.168.0.29:8080?SetVars&" + DataString,
+		url: "http://192.168.0.28:8080?SetVars&" + DataString,
 		cache: false,
 		crossDomain:true,
 		dataType: "jsonp",
@@ -78,7 +78,7 @@ function GetData() {
 	//console.debug("Sending item is now: " + senddingItem);
 	$.ajax({
 		type: "GET",
-		url: "http://192.168.0.29:8080?GetVars=" + myTitle,
+		url: "http://192.168.0.28:8080?GetVars=" + myTitle,
 		cache: false,
 		crossDomain:true,
 		dataType: "jsonp",
