@@ -1,6 +1,4 @@
 #!/usr/bin/env ruby
-  
-# $: << File.expand_path('../../lib/', __FILE__)
 require 'rubygems' 
 require 'bundler/setup'
 require 'sinatra'
@@ -12,7 +10,6 @@ configure do
   set :server, 'thin'
   set :environment, 'production'
 end
-
 
 #Multiusers
 set :sockets, []
@@ -40,7 +37,7 @@ get '/' do
         settings.sockets << ws  # append socket to array
         
         puts "WebSocket connection open. Clients connected: #{settings.sockets.length}"
-        puts settings.sockets
+        #puts settings.sockets
       end
       
       
@@ -115,6 +112,9 @@ get '/pb' do
     "player1" => false,
     "player2" => false,
   }
+  
+  # don't let clients send events to WD temporarily
+  
 end
 
 
