@@ -18,19 +18,25 @@ module CarGameServer
     "player2" => false,
   }
   
-  def self.register_player
+  
+  def self.register_player(socket)
     @players.each do |key, value|
       if value == false
+        @players[key] = socket
+        puts "player #{@players[key]} in the game"
         return key
       end
     end
     # if we've gotten here, then the game is full
+    return false
   end
   
-  
 
-  def self.players
-
+  def self.reset_players
+    @players = {
+      "player1" => false,
+      "player2" => false,      
+    }
   end
 
 
@@ -46,10 +52,7 @@ module CarGameServer
       
       get '/test' do
         # wipe players array
-        CarGameServer.players = {
-          "player1" => false,
-          "player2" => false,
-        }
+        CarGameServer.reset_players
         
         # pass gameOver event to all connected clients
         json_string = {
@@ -87,40 +90,37 @@ module CarGameServer
           
           if hash["event"] == "registerPlayer"
           
-            registration_full = true
-            
             # check player array. If there is a false, set this as player
-            CarGameServer.players.each do |key, value|
-              if value == false
-                # we can register this player. set & return
-                CarGameServer.players[key] = socket
-                
-                # this is a bit dodgy, as when the 2nd player registers,
-                # this is actually true. but for the logic below to work, we say
-                # false for now. REFACTOR LATER.
-                registration_full = false
-                
-                json_string = {
-                  "event" => "registerPlayer",
-                  "data"  => {
-                    "player" => "#{key}"
-                  }
-                }.to_json
-                
-                # note: on client end, check for player value
-                socket.send json_string
-                break
-              end
-            end
+            registered = CarGameServer.register_player(socket)
             
-            
-            if registration_full
+            if registered == false
               json_string = {
                 "event" => "registrationFailed"
               }.to_json
               
+              socket.send json_string 
+            else 
+              
+              # todo: check if register_player actually succeeded
+              json_string = {
+                "event" => "registerPlayer",
+                "data"  => {
+                  "player" => registered
+                }
+              }.to_json
+              
+              # note: on client end, check for player value
               socket.send json_string
             end
+            
+            
+
+            
+            
+            
+            # if registration_full
+
+            # end
           end
           
           
