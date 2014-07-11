@@ -35,6 +35,7 @@ var WebSocketWithDispatcher = function(url) {
 
   // dispatch to the right handlers
   conn.onmessage = function(evt) {
+    console.log(evt.data);
     var json = JSON.parse(evt.data);
     dispatch(json.event, json.data);
   };

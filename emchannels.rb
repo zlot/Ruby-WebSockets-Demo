@@ -9,7 +9,7 @@ module Example
     @em_channel ||= EM::Channel.new
   end
   
-  EventMachine.run do
+  EM.run do
     
     class App < Sinatra::Base
       
@@ -24,7 +24,7 @@ module Example
       end
     end
 
-    EventMachine::WebSocket.start :host => '0.0.0.0', :port => 8080 do |socket|
+    EM::WebSocket.start :host => '0.0.0.0', :port => 8080 do |socket|
       
       socket.onopen do
         sid = Example.em_channel.subscribe do |msg|
