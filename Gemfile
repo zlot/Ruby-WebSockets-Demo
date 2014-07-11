@@ -8,5 +8,3 @@ gem 'sinatra', '1.4.3'
 
 gem 'em-websocket'
 gem 'json'
-
-gem 'websocket-eventmachine-client'
