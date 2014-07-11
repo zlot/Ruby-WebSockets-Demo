@@ -112,21 +112,8 @@ module CarGameServer
               # note: on client end, check for player value
               socket.send json_string
             end
-            
-            
-
-            
-            
-            
-            # if registration_full
-
-            # end
           end
-          
-          
-          
         end
-        
         
         socket.onclose do 
           puts "Closed a connection"
@@ -139,16 +126,12 @@ module CarGameServer
         
       end
   
-
     end
-  
-  
   
     # Run our sinatra server
     App.run! :port => 3000
     
   end
-
 
 end
 
