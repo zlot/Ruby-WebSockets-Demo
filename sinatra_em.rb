@@ -24,6 +24,14 @@ module CarGameServer
       if value == false
         @players[key] = socket
         puts "player #{@players[key]} in the game"
+        if key == "player2"
+          # we have a full game. Commence game!
+          json_string = {
+            "event" => "gameStart"
+          }.to_json
+          CarGameServer.em_channel.push json_string 
+        end
+        
         return key
       end
     end
@@ -46,11 +54,15 @@ module CarGameServer
     # -------------------------------------------
     class App < Sinatra::Base
       
+      configure do
+        set :environment, 'production'
+      end
+      
       get '/' do
         erb :cargame
       end
       
-      get '/test' do
+      get '/gameover' do
         # wipe players array
         CarGameServer.reset_players
         
@@ -63,6 +75,32 @@ module CarGameServer
         status 200
       end
       
+      get '/player1wins' do
+        # tell clients
+        json_string = {
+          "event" => "gameOver",
+          "data" => {
+            "winner" => "player1"
+          }
+        }.to_json
+        
+        puts "car1won"
+        CarGameServer.em_channel.push json_string
+      end
+
+      get '/player2wins' do
+        # tell clients
+        json_string = {
+          "event" => "gameOver",
+          "data" => {
+            "winner" => "player2"
+          }
+        }.to_json
+        
+        puts "car2won"
+        CarGameServer.em_channel.push json_string
+      end
+ 
     end
   
     

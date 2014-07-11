@@ -27,24 +27,34 @@
       .btn-lg {
         padding: 100px 16px;
       }
-      p {
+      p, #player-registered-msg {
         padding: 15px;
+      }
+      
+      legend {
+        color: #fff;
       }
     </style>
     
     <script src="bower_components/jquery/dist/jquery.min.js"></script>    
     <script src="bower_components/bootstrap/dist/js/bootstrap.js"></script>
-    
+    <script src="bower_components/velocity/jquery.velocity.min.js"></script>
+    <script src="bower_components/velocity/velocity.ui.js"></script>
     <script type="text/javascript">
       /* don't let the page scroll */
       $(document).bind('touchmove', function(e) {
         e.preventDefault();
       });
     
+      var player;
+    
       $(document).ready(function() {
-        $("#green-car-go").hide();
-        $("#red-car-go").hide();
+        $("#green-car-go").css("opacity",0);
+        $("#red-car-go").css("opacity",0);
         $('#player-registered-msg').hide();
+        $('#details-form').css("opacity",0);
+        $('#thanks').hide();
+      
       
         function debug(str){ 
           $("#debug").append("<p>"+str+"</p>");
@@ -59,31 +69,89 @@
           $('#register-player').fadeOut();
           
           $("#player-registered-msg")
-            .fadeIn()
-            .text("You're in the game!")
-            .append("<p>You are: "+objData.player+"</p>");
-          if(objData.player === "player1") {
-            $("#green-car-go").show();
-          } else {
-            $("#red-car-go").show();
-          }
+            .prepend("<p>You're in the game!</p>")
+            .append("<p>You are the "+(objData.player === "player1" ? "Green Car" : "Red Car")+"</p>")
+            .removeClass("bg-warning")
+            .removeClass("text-danger");
+          
+          player = objData.player;
+          
+          $("#player-registered-msg").velocity("transition.shrinkIn", {drag:true});
+          
+          
+          setInterval(function() {
+              $('#waiting-text').velocity('callout.pulse') 
+          }, 2000);
         }
         
         function registrationFailed() {
-          $("#player-registered-msg").text("Sorry, there are too many players.")
+          $("#player-registered-msg").text("Sorry, there are too many players. \
+            Please wait until the game begins again!")
             .fadeIn()
             .removeClass("bg-primary")
             .addClass("bg-warning")
             .addClass("text-danger");
         }
         
-        function gameOver() {
+        function gameStart() {
+          
+          $("#player-registered-msg").text("Get ready to play!");
+          
+          // 3 2 1 countdown animation
+          $('#countdown').text('3').velocity("transition.whirlIn").velocity("transition.fadeOut", {
+            complete: function(elements) {
+              $(elements[0]).text('2').velocity("transition.whirlIn").velocity("transition.fadeOut", {
+                complete: function(elements) {
+                  $(elements[0]).text('1').velocity("transition.whirlIn").velocity("transition.fadeOut", {
+                    complete: function(elements) {
+                      $(elements[0]).text('GO!').velocity("transition.whirlIn").velocity("transition.fadeOut", {
+                        complete: function(elements) {
+                          // now, bind game button and show!
+                          bindButtonEvents();
+                          if(player === "player1") {
+                            $("#red-car-go").hide();
+                            $("#green-car-go").velocity("callout.flash");
+                          } else {
+                            $("#green-car-go").hide();
+                            $("#red-car-go").velocity("callout.flash");
+                          }
+                        }
+                      });
+                    }
+                  });
+                }
+              });
+            }
+          });
+          
+        }
+        
+        function gameOver(objData) {
           // unassign event listeners
           $('#red-car-go').unbind('mousedown touchstart mouseup touchend');
           $('#green-car-go').unbind('mousedown touchstart mouseup touchend');
+          
+          // if this person won, show the "enter your details to get your prize"
+          $("#game-controls").velocity("transition.bounceOut");          
+          
+          if(player === objData.winner) {
+            // you've won!
+            $("#player-registered-msg").text("YOU WON!");
+          } else {
+            // you've lost.
+            $("#player-registered-msg").text("You lost!");
+          }
+          
+          $('#details-form').velocity("transition.flipXIn", {delay:1800});
         }
         
-        (function bindButtonEvents() {
+        $('#form-submit').click(function() {
+          $('#details-form').velocity("transition.fadeOut");
+          $('#thanks').velocity('transition.bounceIn', {delay:1200});
+        });
+        
+        
+        function bindButtonEvents() {
           $('#red-car-go').bind('mousedown touchstart', function() {
             SetData('WDBtnCustom_2=1');
           }).bind('mouseup touchend', function() {
@@ -95,14 +163,16 @@
           }).bind('mouseup touchend', function() {
             SetData('WDBtnCustom_6=0');
           });
-        })();
+        };
         
         // Create connection to ruby websocket server
         // and bind onmessage ws events to functions
+        // all these callbacks are passed a data json object.
         var socket = new WebSocketWithDispatcher("ws://192.168.0.34:8080");
-          socket.bind('registerPlayer', playerRegistered);
-          socket.bind('registrationFailed', registrationFailed);
-          socket.bind('gameOver', gameOver);
+        socket.bind('registerPlayer', playerRegistered);
+        socket.bind('registrationFailed', registrationFailed);
+        socket.bind('gameOver', gameOver);
+        socket.bind('gameStart', gameStart);
       }); 
     </script>   
     
@@ -126,22 +196,77 @@
   <body>
     
     <div id="container">
-      <button type="button" class="btn btn-primary center-block" id="register-player">Enter the game</button>
       
-      <p id="player-registered-msg" class="bg-primary" style="text-align:center;"></p>
+      <div id="player-registered-msg" class="bg-primary" style="text-align:center;">
+        <p id='waiting-text'>Waiting for a second player ...</p>
+      </div>
       
-      
-      <button type="button" class="btn btn-danger btn-lg btn-block" id="red-car-go"
-        >Push me!</button>
-  
-      <button type="button" class="btn btn-success btn-lg btn-block" id="green-car-go"
-        >Push me!</button>
-  
+      <div id="game-controls">
+        <button type="button" class="btn btn-primary center-block" id="register-player">Enter the game</button>
+        
+        <div id="countdown" style="width:100%;height:100px;font-size:84px;text-align:center"></div>
+        
+        <button type="button" class="btn btn-danger btn-lg btn-block" id="red-car-go"
+          >Push me!</button>
+    
+        <button type="button" class="btn btn-success btn-lg btn-block" id="green-car-go"
+          >Push me!</button>
+      </div>
   
       <div id="debug"></div>
       
       
-      
+      <div id="details-form">
+        <form class="form-horizontal">
+          <fieldset>
+          
+            <!-- Form Name -->
+            <legend>Enter your details to claim your prize!</legend>
+            
+            <!-- Text input-->
+            <div class="control-group">
+              <label class="control-label" for="name">Name</label>
+              <div class="controls">
+                <input id="name" name="name" type="text" placeholder="" class="input-xlarge">
+                
+              </div>
+            </div>
+            
+            <!-- Text input-->
+            <div class="control-group">
+              <label class="control-label" for="email">Email</label>
+              <div class="controls">
+                <input id="email" name="email" type="text" placeholder="" class="input-xlarge">
+                
+              </div>
+            </div>
+            
+            <!-- Multiple Checkboxes (inline) -->
+            <div class="control-group">
+              <label class="control-label" for="checkboxes"></label>
+              <div class="controls">
+                <label class="checkbox inline" for="checkboxes-0">
+                  <input type="checkbox" name="checkboxes" id="checkboxes-0" value="Please sign me up to your mailing list">
+                  Please sign me up to your mailing list
+                </label>
+              </div>
+            </div>
+            
+            <!-- Button -->
+            <div class="control-group">
+              <div class="controls">
+                <button type="button" id="form-submit" name="" class="btn btn-success">Submit</button>
+              </div>
+            </div>
+          
+          </fieldset>
+        </form>
       </div>
+      
+      <p id="thanks" class="bg-primary" style="text-align:center;">Thanks! Please check your email for 
+        details on how to receive your prize!</p>
+      
+      
+    </div>
   </body>
 </html>
