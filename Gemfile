@@ -1,9 +1,12 @@
 source 'https://rubygems.org'
 
-gem 'sinatra'
-gem 'sinatra-websocket'
+# require these specific versions of thin & sinatra
+# to get away from instant shutting down of sinatra app
+# see http://stackoverflow.com/questions/20339355/sinatra-thin-runs-and-cannot-be-stopped-with-ctrl-c
+gem 'thin', '1.5.1'
+gem 'sinatra', '1.4.3'
 
-# error using latest em-websocket with sinatra-websocket '[23074:ERROR] 2013-02-13 16:18:46 :: uninitialized constant EventMachine::WebSocket::HandlerFactory'
-# fix is to use a version prior to 0.3.8, as per issue found here (unrelated git project): https://github.com/postrank-labs/goliath/issues/228 
-gem 'em-websocket', '0.3.7'
+gem 'em-websocket'
+gem 'json'
 
+gem 'websocket-eventmachine-client'
