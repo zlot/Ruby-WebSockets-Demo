@@ -137,12 +137,15 @@
           if(player === objData.winner) {
             // you've won!
             $("#player-registered-msg").text("YOU WON!");
+            // show details form
+            $('#details-form').velocity("transition.flipXIn", {delay:1800});
           } else {
             // you've lost.
             $("#player-registered-msg").text("You lost!");
+            // show click button to rejoin the queue.
+            $("#register-player").fadeIn();
           }
           
-          $('#details-form').velocity("transition.flipXIn", {delay:1800});
         }
         
         $('#form-submit').click(function() {
