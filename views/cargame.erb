@@ -168,7 +168,7 @@
         // Create connection to ruby websocket server
         // and bind onmessage ws events to functions
         // all these callbacks are passed a data json object.
-        var socket = new WebSocketWithDispatcher("ws://192.168.0.34:8080");
+        var socket = new WebSocketWithDispatcher("ws://192.168.0.205:8080");
         socket.bind('registerPlayer', playerRegistered);
         socket.bind('registrationFailed', registrationFailed);
         socket.bind('gameOver', gameOver);
