@@ -39,6 +39,16 @@ module CarGameServer
     return false
   end
   
+  
+  def self.remove_player(socket)
+    @players.each do |key, value|
+      if @players[key] == socket
+        @players[key] = false
+        break
+      end
+    end
+  end
+  
 
   def self.reset_players
     @players = {
@@ -84,8 +94,11 @@ module CarGameServer
           }
         }.to_json
         
-        puts "car1won"
+        puts "The winner is player 1!"
         CarGameServer.em_channel.push json_string
+          
+        # reset game
+        CarGameServer.reset_players
       end
 
       get '/player2wins' do
@@ -97,8 +110,11 @@ module CarGameServer
           }
         }.to_json
         
-        puts "car2won"
+        puts "The winner is player 2!"
         CarGameServer.em_channel.push json_string
+        
+        # reset game
+        CarGameServer.reset_players
       end
  
     end
@@ -155,6 +171,9 @@ module CarGameServer
         
         socket.onclose do 
           puts "Closed a connection"
+          
+          CarGameServer.remove_player(socket)
+          
           socket.send "{'message':'I closed you'}"
           
           CarGameServer.em_channel.unsubscribe(sid)
