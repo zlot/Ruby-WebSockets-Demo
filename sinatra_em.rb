@@ -15,9 +15,16 @@ module CarGameServer
 
   @players = {
     "player1" => false,
-    "player2" => false,
+    "player2" => false
   }
+ 
+  @player_queue = Queue.new()
   
+  # add players to queue
+  
+  # game is over? take the next 2 players from the queue
+  
+  # player disconnected? Then take them out of the queue.
   
   def self.register_player(socket)
     @players.each do |key, value|
@@ -29,15 +36,52 @@ module CarGameServer
           json_string = {
             "event" => "gameStart"
           }.to_json
-          CarGameServer.em_channel.push json_string 
+          
+          @players["player1"].send json_string
+          @players["player2"].send json_string
         end
         
         return key
       end
     end
     # if we've gotten here, then the game is full
+    @player_queue << socket;
+    puts "player queue #{@player_queue.length}"
     return false
   end
+  
+  # only to be used by self.reset_players().
+  def self.register_players(socket1, socket2)
+    @players["player1"] = socket1
+    @players["player2"] = socket2
+    
+    
+    json_string = {
+      "event" => "registerPlayer",
+      "data"  => {
+        "player" => "player1"
+      }
+    }.to_json
+    @players["player1"].send json_string
+    
+    json_string = {
+      "event" => "registerPlayer",
+      "data"  => {
+        "player" => "player2"
+      }
+    }.to_json
+    @players["player2"].send json_string
+    
+    
+    json_string = {
+      "event" => "gameStart"
+    }.to_json
+    
+    @players["player1"].send json_string
+    @players["player2"].send json_string
+  end
+  
+  
   
   
   def self.remove_player(socket)
@@ -50,11 +94,28 @@ module CarGameServer
   end
   
 
-  def self.reset_players
+  def self.reset_players(json_string)
+    
+    @players.each do |key, value|
+      @players[key].send json_string
+    end
+    
     @players = {
       "player1" => false,
-      "player2" => false,      
+      "player2" => false
     }
+    
+    puts "@player_queue.length: #{@player_queue.length}"
+    # if there are two people in the queue, the game will start again
+    if @player_queue.length >= 2
+      # lets play, put both players in.
+      CarGameServer.register_players(@player_queue.pop, @player_queue.pop)
+    end
+    if @player_queue.length == 1
+      # register this guy
+      CarGameServer.register_player(@player_queue.pop)
+    end
+    
   end
 
 
@@ -72,19 +133,7 @@ module CarGameServer
         erb :cargame
       end
       
-      get '/gameover' do
-        # wipe players array
-        CarGameServer.reset_players
-        
-        # pass gameOver event to all connected clients
-        json_string = {
-          "event" => "gameOver"
-        }.to_json
-        
-        CarGameServer.em_channel.push json_string
-        status 200
-      end
-      
+      # either one or the other will be sent via WD when game is over.
       get '/player1wins' do
         # tell clients
         json_string = {
@@ -95,10 +144,9 @@ module CarGameServer
         }.to_json
         
         puts "The winner is player 1!"
-        CarGameServer.em_channel.push json_string
-          
+        
         # reset game
-        CarGameServer.reset_players
+        CarGameServer.reset_players(json_string)
       end
 
       get '/player2wins' do
@@ -111,10 +159,9 @@ module CarGameServer
         }.to_json
         
         puts "The winner is player 2!"
-        CarGameServer.em_channel.push json_string
         
         # reset game
-        CarGameServer.reset_players
+        CarGameServer.reset_players(json_string)
       end
  
     end
@@ -139,7 +186,6 @@ module CarGameServer
         
         socket.onmessage do |jsonObj|
         
-          
           hash = JSON.parse jsonObj
           
           if hash["event"] == "registerPlayer"
@@ -152,7 +198,8 @@ module CarGameServer
                 "event" => "registrationFailed"
               }.to_json
               
-              socket.send json_string 
+              socket.send json_string
+              
             else 
               
               # todo: check if register_player actually succeeded
