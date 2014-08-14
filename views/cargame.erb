@@ -49,11 +49,18 @@
       var player;
     
       $(document).ready(function() {
-        $("#green-car-go").css("opacity",0);
-        $("#red-car-go").css("opacity",0);
         $('#player-registered-msg').hide();
-        $('#details-form').css("opacity",0);
-        $('#thanks').hide();
+        
+        function resetButtons() {
+          // $("#green-car-go").css("opacity",0);
+          // $("#red-car-go").css("opacity",0);
+          $("#green-car-go").hide();
+          $("#red-car-go").hide();
+          // $('#details-form').css("opacity",0);
+          $('#details-form').hide();
+          $('#thanks').hide();
+        };
+        resetButtons();
       
       
         function debug(str){ 
@@ -69,7 +76,7 @@
           $('#register-player').fadeOut();
           
           $("#player-registered-msg")
-            .prepend("<p>You're in the game!</p>")
+            .text("You're in the game!")
             .append("<p>You are the "+(objData.player === "player1" ? "Green Car" : "Red Car")+"</p>")
             .removeClass("bg-warning")
             .removeClass("text-danger");
@@ -94,7 +101,6 @@
         }
         
         function gameStart() {
-          
           $("#player-registered-msg").text("Get ready to play!");
           
           // 3 2 1 countdown animation
@@ -110,10 +116,10 @@
                           bindButtonEvents();
                           if(player === "player1") {
                             $("#red-car-go").hide();
-                            $("#green-car-go").velocity("callout.flash");
+                            $("#green-car-go").fadeIn(1000);
                           } else {
                             $("#green-car-go").hide();
-                            $("#red-car-go").velocity("callout.flash");
+                            $("#red-car-go").fadeIn(1000);
                           }
                         }
                       });
@@ -132,7 +138,7 @@
           $('#green-car-go').unbind('mousedown touchstart mouseup touchend');
           
           // if this person won, show the "enter your details to get your prize"
-          $("#game-controls").velocity("transition.bounceOut");          
+          $("#game-controls").velocity("transition.bounceOut");
           
           if(player === objData.winner) {
             // you've won!
@@ -141,9 +147,15 @@
             $('#details-form').velocity("transition.flipXIn", {delay:1800});
           } else {
             // you've lost.
-            $("#player-registered-msg").text("You lost!");
+            $("#player-registered-msg").text("You lost!\n Enter the game again?");
             // show click button to rejoin the queue.
-            $("#register-player").fadeIn();
+            
+            resetButtons();
+            $("#game-controls").velocity("transition.bounceIn");
+            setTimeout(function(){
+              $("#register-player").fadeIn();
+            }, 2000);
+            
           }
           
         }
@@ -156,28 +168,28 @@
         
         function bindButtonEvents() {
           $('#red-car-go').bind('mousedown touchstart', function() {
-            SetData('WDBtnCustom_2=1');
+            SetData('WDBtnCustom_23=1');
           }).bind('mouseup touchend', function() {
-            SetData('WDBtnCustom_2=0');
+            SetData('WDBtnCustom_23=0');
           });
           
           $('#green-car-go').bind('mousedown touchstart', function() {
-            SetData('WDBtnCustom_6=1');
+            SetData('WDBtnCustom_19=1');
           }).bind('mouseup touchend', function() {
-            SetData('WDBtnCustom_6=0');
+            SetData('WDBtnCustom_19=0');
           });
         };
         
         // Create connection to ruby websocket server
         // and bind onmessage ws events to functions
         // all these callbacks are passed a data json object.
-        var socket = new WebSocketWithDispatcher("ws://192.168.0.205:8080");
+        var socket = new WebSocketWithDispatcher("ws://192.168.0.34:8080");
         socket.bind('registerPlayer', playerRegistered);
         socket.bind('registrationFailed', registrationFailed);
         socket.bind('gameOver', gameOver);
         socket.bind('gameStart', gameStart);
       }); 
-    </script>   
+    </script>
     
     
     <script type="text/javascript" src="js_coolux/WD_Standard.js"></script>
@@ -205,15 +217,15 @@
       </div>
       
       <div id="game-controls">
-        <button type="button" class="btn btn-primary center-block" id="register-player">Enter the game</button>
+        <button type="button" class="btn btn-primary center-block" id="register-player" style="margin-top: 35px;">Enter the game</button>
         
         <div id="countdown" style="width:100%;height:100px;font-size:84px;text-align:center"></div>
         
         <button type="button" class="btn btn-danger btn-lg btn-block" id="red-car-go"
-          >Push me!</button>
+          >Tap me!</button>
     
         <button type="button" class="btn btn-success btn-lg btn-block" id="green-car-go"
-          >Push me!</button>
+          >Tap me!</button>
       </div>
   
       <div id="debug"></div>
@@ -228,10 +240,16 @@
             
             <!-- Text input-->
             <div class="control-group">
-              <label class="control-label" for="name">Name</label>
+              <label class="control-label" for="first_name">First Name</label>
               <div class="controls">
-                <input id="name" name="name" type="text" placeholder="" class="input-xlarge">
-                
+                <input id="first-name" name="first_name" type="text" placeholder="" class="input-xlarge">
+              </div>
+            </div>
+            <!-- Text input-->
+            <div class="control-group">
+              <label class="control-label" for="last_name">Last Name</label>
+              <div class="controls">
+                <input id="last-name" name="last_name" type="text" placeholder="" class="input-xlarge">
               </div>
             </div>
             
@@ -240,6 +258,15 @@
               <label class="control-label" for="email">Email</label>
               <div class="controls">
                 <input id="email" name="email" type="text" placeholder="" class="input-xlarge">
+                
+              </div>
+            </div>
+            
+            <!-- Text input-->
+            <div class="control-group">
+              <label class="control-label" for="phone_num">Phone Number</label>
+              <div class="controls">
+                <input id="phone-num" name="phone_num" type="text" placeholder="" class="input-xlarge">
                 
               </div>
             </div>
@@ -254,7 +281,7 @@
                 </label>
               </div>
             </div>
-            
+            <br/>
             <!-- Button -->
             <div class="control-group">
               <div class="controls">
