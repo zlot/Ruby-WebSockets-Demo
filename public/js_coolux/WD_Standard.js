@@ -4,13 +4,9 @@ var _bDebug = true;
 var supportsTouch = false;
 var senddingItem = undefined;
 
+var wdWebServerUrl = 'http://192.168.0.12:8080';
+
 $(document).ready(function() {	
-	//log.warn("Page Loaded!");	
-	//console.debug("Loaded!");
-	/*$(".WDColorPicker").addTouch();
-	$(".ui-draggable").addTouch();
-	$(".draggable").addTouch();
-	*/
 	supportsTouch = 'ontouchstart' in window || navigator.msMaxTouchPoints;
 	
 	$(".ImageLoader").each(function(i){
@@ -58,7 +54,7 @@ function SetData(DataString) {
 	clearTimeout(aktiv);
 	$.ajax({
 		type: "GET",
-		url: "http://192.168.0.206:8080?SetVars&" + DataString,
+		url: wdWebServerUrl+ "?SetVars&" + DataString,
 		cache: false,
 		crossDomain:true,
 		dataType: "jsonp",
@@ -78,7 +74,7 @@ function GetData() {
 	//console.debug("Sending item is now: " + senddingItem);
 	$.ajax({
 		type: "GET",
-		url: "http://192.168.0.206:8080?GetVars=" + myTitle,
+		url: wdWebServerUrl+ "?GetVars=" + myTitle,
 		cache: false,
 		crossDomain:true,
 		dataType: "jsonp",
@@ -395,7 +391,7 @@ function GoToWebLink(MyLink, name) {
 		window.clearInterval(aktiv);
 		$.ajax({
 			type: "GET",
-			url: "http://192.168.0.29:8080?SetVars&" + name + "=0",
+			url: wdWebServerUrl + "?SetVars&" + name + "=0",
 			dataType: "jsonp",
 			async: false
 		});
@@ -408,7 +404,7 @@ function InitTreeView(myID, Mode) {
 	var TreeView = "#WDTreeView_" + myID;
 	$(TreeView).dynatree({
 		initAjax: {
-			url: "http://192.168.0.29:8080/WD_TreeData",
+			url: wdWebServerUrl + "/WD_TreeData",
 			data: {
 				key: "root",
 				id: myID
@@ -422,7 +418,7 @@ function InitTreeView(myID, Mode) {
 		},
 		onLazyRead: function(d) {
 			d.appendAjax({
-				url: "http://192.168.0.29:8080/WD_TreeData",
+				url: wdWebServerUrl + "/WD_TreeData",
 				data: {
 					key: d.data.key,
 					id: myID
