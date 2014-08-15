@@ -52,11 +52,8 @@
         $('#player-registered-msg').hide();
         
         function resetButtons() {
-          // $("#green-car-go").css("opacity",0);
-          // $("#red-car-go").css("opacity",0);
           $("#green-car-go").hide();
           $("#red-car-go").hide();
-          // $('#details-form').css("opacity",0);
           $('#details-form').hide();
           $('#thanks').hide();
         };
@@ -93,15 +90,16 @@
         
         function registrationFailed() {
           $("#player-registered-msg").text("Sorry, there are too many players. \
-            You have been entered into a queue! You are player #")
+            You have been entered into a queue!")
             .fadeIn()
             .removeClass("bg-primary")
             .addClass("bg-warning")
             .addClass("text-danger");
+          $('#register-player').hide();
         }
         
         function gameStart() {
-          $("#player-registered-msg").text("Get ready to play!");
+          $("#player-registered-msg").text("Get ready to play! You are player: " + player);
           
           // 3 2 1 countdown animation
           $('#countdown').text('3').velocity("transition.whirlIn").velocity("transition.fadeOut", {
@@ -191,7 +189,6 @@
       }); 
     </script>
     
-    
     <script type="text/javascript" src="js_coolux/WD_Standard.js"></script>
     <script type="text/javascript">
       var myTitle = "Car_Game";
@@ -205,12 +202,12 @@
     
     <script src="js/ws_events_dispatcher.js"></script>
     
-    
   </head>
   
   <body>
     
     <div id="container">
+      <img src="img/TMC_LOGO_2014.svg" width="100%" style="margin-top: 1em;margin-bottom:1em;"/>
       
       <div id="player-registered-msg" class="bg-primary" style="text-align:center;">
         <p id='waiting-text'>Waiting for a second player ...</p>
