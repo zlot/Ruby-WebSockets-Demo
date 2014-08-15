@@ -18,37 +18,71 @@ module CarGameServer
     "player2" => false
   }
  
-  @player_queue = Queue.new()
+  @player_queue = Array.new()
   
-  # add players to queue
-  
-  # game is over? take the next 2 players from the queue
-  
-  # player disconnected? Then take them out of the queue.
+  @game_is_playing = false
   
   def self.register_player(socket)
+    
+    if @game_is_playing
+      
+      # if we're here, then the game is full
+      @player_queue << socket;
+      puts "player queue #{@player_queue.length}"
+      
+      json_string = {
+        "event" => "registrationFailed"
+      }.to_json
+      
+      socket.send json_string
+      
+      return
+    end
+    
+    
     @players.each do |key, value|
       if value == false
         @players[key] = socket
         puts "player #{@players[key]} in the game"
-        if key == "player2"
-          # we have a full game. Commence game!
-          json_string = {
-            "event" => "gameStart"
-          }.to_json
-          
-          @players["player1"].send json_string
-          @players["player2"].send json_string
-        end
         
-        return key
+        json_string = {
+          "event" => "registerPlayer",
+          "data"  => {
+            "player" => key
+          }
+        }.to_json
+        
+        # note: on client end, check for player value
+        socket.send json_string
+        break
       end
+      
     end
-    # if we've gotten here, then the game is full
-    @player_queue << socket;
-    puts "player queue #{@player_queue.length}"
-    return false
+    
+    puts "@players[player1]: #{@players["player1"]}"
+    puts "@players[player2]: #{@players["player2"]}"
+    puts "@game_is_playing: #{@game_is_playing}"
+    
+    if !@game_is_playing && @players["player1"] != false && @players["player2"] != false 
+      CarGameServer.begin_game
+    end
+              
   end
+  
+  
+  def self.begin_game
+    puts 'WE ARE COMMENCING A GAME'
+    # we have a full game. Commence game!
+    json_string = {
+      "event" => "gameStart"
+    }.to_json
+    
+    @players["player1"].send json_string
+    @players["player2"].send json_string
+    
+    @game_is_playing = true
+  end
+  
   
   # only to be used by self.reset_players().
   def self.register_players(socket1, socket2)
@@ -72,13 +106,7 @@ module CarGameServer
     }.to_json
     @players["player2"].send json_string
     
-    
-    json_string = {
-      "event" => "gameStart"
-    }.to_json
-    
-    @players["player1"].send json_string
-    @players["player2"].send json_string
+    CarGameServer.begin_game
   end
   
   
@@ -91,29 +119,39 @@ module CarGameServer
         break
       end
     end
+    
+    # remove from queue
+    did_it_remove = @player_queue.delete(socket)
+    puts "I removed: #{did_it_remove}"
+    
   end
   
 
   def self.reset_players(json_string)
     
     @players.each do |key, value|
-      @players[key].send json_string
+      if @players[key] != false
+        @players[key].send json_string
+      end
     end
+    
+    @game_is_playing = false
     
     @players = {
       "player1" => false,
       "player2" => false
     }
     
+    
     puts "@player_queue.length: #{@player_queue.length}"
     # if there are two people in the queue, the game will start again
     if @player_queue.length >= 2
       # lets play, put both players in.
-      CarGameServer.register_players(@player_queue.pop, @player_queue.pop)
+      CarGameServer.register_players(@player_queue.shift, @player_queue.shift)
     end
     if @player_queue.length == 1
       # register this guy
-      CarGameServer.register_player(@player_queue.pop)
+      CarGameServer.register_player(@player_queue.shift)
     end
     
   end
@@ -189,39 +227,19 @@ module CarGameServer
           hash = JSON.parse jsonObj
           
           if hash["event"] == "registerPlayer"
-          
             # check player array. If there is a false, set this as player
-            registered = CarGameServer.register_player(socket)
-            
-            if registered == false
-              json_string = {
-                "event" => "registrationFailed"
-              }.to_json
-              
-              socket.send json_string
-              
-            else 
-              
-              # todo: check if register_player actually succeeded
-              json_string = {
-                "event" => "registerPlayer",
-                "data"  => {
-                  "player" => registered
-                }
-              }.to_json
-              
-              # note: on client end, check for player value
-              socket.send json_string
-            end
+            CarGameServer.register_player(socket)
           end
         end
         
         socket.onclose do 
           puts "Closed a connection"
           
+          #remove from @players & remove from queue
           CarGameServer.remove_player(socket)
           
-          socket.send "{'message':'I closed you'}"
+          
+          #socket.send "{'message':'I closed you'}"
           
           CarGameServer.em_channel.unsubscribe(sid)
           puts "client disconnected: #{sid}"
